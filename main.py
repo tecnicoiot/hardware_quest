@@ -81,6 +81,19 @@ def desenhar_alerta(superficie, x, y, tamanho=24):
     pygame.draw.rect(superficie, cor_branca, (x + tamanho // 2 - 1, y + 3 * tamanho // 4, 2, 2))
 
 
+def desenhar_coracao(superficie, x, y, tamanho=16):
+    cor_vermelha = (255, 60, 60)
+    r = tamanho // 4
+    pygame.draw.circle(superficie, cor_vermelha, (x + r, y + r), r)
+    pygame.draw.circle(superficie, cor_vermelha, (x + 3 * r, y + r), r)
+    pygame.draw.polygon(superficie, cor_vermelha, [
+        (x, y + r),
+        (x + 2 * r, y + tamanho),
+        (x + 4 * r, y + r)
+    ])
+
+
+
 
 # ==========================================
 # CONFIGURAÇÕES E INICIALIZAÇÃO
@@ -562,11 +575,12 @@ class JogoHardware:
             pygame.draw.rect(painel, VERDE_MATRIX, painel.get_rect(), 2)
             superficie.blit(painel, (75, 75))
 
-            info = FONTE_TEXTO.render(f"Jogador: {self.nome_jogador} | Pts: {self.pontos} | Vidas: {'❤️'*self.vidas}", True, AMARELO)
+            info = FONTE_TEXTO.render(f"Jogador: {self.nome_jogador} | Pts: {self.pontos} | Vidas: ", True, AMARELO)
             prog = FONTE_SUBTITULO.render(f"Pergunta {self.idx_pergunta + 1} de {len(QUIZ_DATA)}", True, VERDE_MATRIX)
             perg = FONTE_SUBTITULO.render(q["pergunta"], True, BRANCO)
-
             superficie.blit(info, (95, 95))
+            for i in range(self.vidas):
+                desenhar_coracao(superficie, 95 + info.get_width() + (i * 20), 96, 16)
             superficie.blit(prog, (95, 125))
             superficie.blit(perg, (95, 165))
 
@@ -586,7 +600,7 @@ class JogoHardware:
             pygame.draw.rect(painel, AZUL_CLARO, painel.get_rect(), 2)
             superficie.blit(painel, (75, 75))
 
-            titulo = FONTE_TITULO.render("🛠️ ETAPA DE MONTAGEM DE HARDWARE", True, AMARELO)
+            titulo = FONTE_TITULO.render("ETAPA DE MONTAGEM DE HARDWARE", True, AMARELO)
             inst = FONTE_TEXTO.render(f"Onde deve ser encaixada a peça [{self.idx_encaixe+1}/5] abaixo?", True, BRANCO)
             peca_txt = FONTE_SUBTITULO.render(f"PEÇA ATUAL: {peca['nome']}", True, VERDE_MATRIX)
 
