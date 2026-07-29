@@ -69,6 +69,19 @@ def desenhar_trofeu(superficie, x, y, tamanho=24):
     ], 2)
 
 
+def desenhar_alerta(superficie, x, y, tamanho=24):
+    cor_vermelha = (255, 60, 60)
+    cor_branca = (255, 255, 255)
+    pygame.draw.polygon(superficie, cor_vermelha, [
+        (x + tamanho // 2, y),
+        (x, y + tamanho),
+        (x + tamanho, y + tamanho)
+    ])
+    pygame.draw.rect(superficie, cor_branca, (x + tamanho // 2 - 1, y + tamanho // 3, 2, tamanho // 3))
+    pygame.draw.rect(superficie, cor_branca, (x + tamanho // 2 - 1, y + 3 * tamanho // 4, 2, 2))
+
+
+
 # ==========================================
 # CONFIGURAÇÕES E INICIALIZAÇÃO
 # ==========================================
@@ -312,13 +325,28 @@ class JogoHardware:
         self.boot_logs = []
         self.boot_timer = 0
         self.boot_step = 0
-        self.mii_normal = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "marcelo", "normal.png")))
-        self.mii_normal = pygame.transform.smoothscale(self.mii_normal, (130, 130))
-        self.mii_triste = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "marcelo", "triste.png")))
-        self.mii_triste = pygame.transform.smoothscale(self.mii_triste, (130, 130))
+        self.mii_marcelo_normal = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "marcelo", "normal.png")))
+        self.mii_marcelo_normal = pygame.transform.smoothscale(self.mii_marcelo_normal, (130, 130))
+        self.mii_marcelo_triste = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "marcelo", "triste.png")))
+        self.mii_marcelo_triste = pygame.transform.smoothscale(self.mii_marcelo_triste, (130, 130))
+        self.mii_bruno_normal = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "bruno", "normal.png")))
+        self.mii_bruno_normal = pygame.transform.smoothscale(self.mii_bruno_normal, (130, 130))
+        self.mii_bruno_triste = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "bruno", "triste.png")))
+        self.mii_bruno_triste = pygame.transform.smoothscale(self.mii_bruno_triste, (130, 130))
+        self.mii_marcelo_normal_end = pygame.transform.smoothscale(self.mii_marcelo_normal, (160, 160))
+        self.mii_marcelo_triste_end = pygame.transform.smoothscale(self.mii_marcelo_triste, (160, 160))
+        self.mii_bruno_normal_end = pygame.transform.smoothscale(self.mii_bruno_normal, (160, 160))
+        self.mii_bruno_triste_end = pygame.transform.smoothscale(self.mii_bruno_triste, (160, 160))
         self.mii_x = 40.0
         self.mii_speed = 3.0
         self.mii_facing_right = True
+        self.mii_bruno_x = 300.0
+        self.mii_bruno_speed = -3.0
+        self.mii_bruno_facing_right = False
+        self.mii_igor = pygame.image.load(obter_caminho_recurso(os.path.join("assets", "img", "miis", "igor", "normal.png")))
+        self.mii_igor = pygame.transform.smoothscale(self.mii_igor, (180, 180))
+        self.btn_creditos = pygame.Rect(150, 430, 200, 40)
+        self.btn_voltar = pygame.Rect(375, 490, 200, 45)
 
     def reiniciar(self):
         self.estado = "NOME"
@@ -340,8 +368,13 @@ class JogoHardware:
     def processar_eventos(self, evento):
         # 1. TELA DE INSERIR NOME
         if self.estado == "NOME":
-            if evento.type == pygame.KEYDOWN:
-                if evento.key == pygame.K_RETURN and self.nome_jogador.strip():
+            if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                if self.btn_creditos.collidepoint(evento.pos):
+                    self.estado = "CREDITOS"
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key == pygame.K_TAB:
+                    self.estado = "CREDITOS"
+                elif evento.key == pygame.K_RETURN and self.nome_jogador.strip():
                     self.estado = "QUIZ"
                 elif evento.key == pygame.K_BACKSPACE:
                     self.nome_jogador = self.nome_jogador[:-1]
@@ -406,6 +439,14 @@ class JogoHardware:
             if evento.type == pygame.KEYDOWN and evento.key == pygame.K_RETURN:
                 self.reiniciar()
 
+        elif self.estado == "CREDITOS":
+            if evento.type == pygame.MOUSEBUTTONDOWN and evento.button == 1:
+                if self.btn_voltar.collidepoint(evento.pos):
+                    self.estado = "NOME"
+            elif evento.type == pygame.KEYDOWN:
+                if evento.key in [pygame.K_TAB, pygame.K_ESCAPE, pygame.K_RETURN]:
+                    self.estado = "NOME"
+
     def desenhar(self, superficie):
         self.fundo.desenhar_e_atualizar(superficie)
 
@@ -427,12 +468,16 @@ class JogoHardware:
             superficie.blit(nome_txt, (60, 280))
             superficie.blit(dica, (60, 390))
 
+            pygame.draw.rect(superficie, VERDE_MATRIX, self.btn_creditos, 2)
+            lbl_creditos = FONTE_TEXTO.render("[TAB] CRÉDITOS", True, AMARELO)
+            superficie.blit(lbl_creditos, (self.btn_creditos.x + (self.btn_creditos.width - lbl_creditos.get_width()) // 2, self.btn_creditos.y + (self.btn_creditos.height - lbl_creditos.get_height()) // 2))
+
             # PLACAR GLOBAL EXIBIDO NO MENU
             self.placar.desenhar(superficie, x=490, y=150, largura=420, altura=360)
 
             self.mii_x += self.mii_speed
-            if self.mii_x >= LARGURA - 40 - 110:
-                self.mii_x = LARGURA - 40 - 110
+            if self.mii_x >= LARGURA - 40 - 130:
+                self.mii_x = LARGURA - 40 - 130
                 self.mii_speed = -self.mii_speed
                 self.mii_facing_right = False
             elif self.mii_x <= 40:
@@ -440,15 +485,73 @@ class JogoHardware:
                 self.mii_speed = -self.mii_speed
                 self.mii_facing_right = True
 
-            y_bounce = abs(pygame.time.get_ticks() // 150 % 4 - 2) * 5
-            mii_y = 540 - y_bounce
+            self.mii_bruno_x += self.mii_bruno_speed
+            if self.mii_bruno_x >= LARGURA - 40 - 130:
+                self.mii_bruno_x = LARGURA - 40 - 130
+                self.mii_bruno_speed = -self.mii_bruno_speed
+                self.mii_bruno_facing_right = False
+            elif self.mii_bruno_x <= 40:
+                self.mii_bruno_x = 40
+                self.mii_bruno_speed = -self.mii_bruno_speed
+                self.mii_bruno_facing_right = True
+
+            y_bounce_m = abs(pygame.time.get_ticks() // 150 % 4 - 2) * 5
+            mii_y_m = 540 - y_bounce_m
+
+            y_bounce_b = abs((pygame.time.get_ticks() + 300) // 150 % 4 - 2) * 5
+            mii_y_b = 540 - y_bounce_b
 
             if self.mii_facing_right:
-                img_to_draw = self.mii_normal
+                img_m = self.mii_marcelo_normal
             else:
-                img_to_draw = pygame.transform.flip(self.mii_normal, True, False)
+                img_m = pygame.transform.flip(self.mii_marcelo_normal, True, False)
 
-            superficie.blit(img_to_draw, (int(self.mii_x), int(mii_y)))
+            if self.mii_bruno_facing_right:
+                img_b = self.mii_bruno_normal
+            else:
+                img_b = pygame.transform.flip(self.mii_bruno_normal, True, False)
+
+            superficie.blit(img_m, (int(self.mii_x), int(mii_y_m)))
+            superficie.blit(img_b, (int(self.mii_bruno_x), int(mii_y_b)))
+
+        elif self.estado == "CREDITOS":
+            painel = pygame.Surface((800, 500), pygame.SRCALPHA)
+            painel.fill(CINZA_TRANSPARENTE)
+            pygame.draw.rect(painel, VERDE_MATRIX, painel.get_rect(), 2)
+            superficie.blit(painel, (75, 75))
+
+            superficie.blit(self.mii_igor, (120, 180))
+
+            titulo = FONTE_TITULO.render("CRÉDITOS E DETALHES", True, AMARELO)
+            superficie.blit(titulo, (75 + (800 - titulo.get_width()) // 2, 100))
+
+            linhas = [
+                "Este jogo foi projetado e desenvolvido para",
+                "execução em um Raspberry Pi, como projeto",
+                "final do Curso Livre de Robótica com",
+                "Raspberry Pi no Senac Registro.",
+                "",
+                "Concepção e Criação Original:",
+                "Igor Oliveira - Estudante do Técnico em IoT",
+                "",
+                "Edições e Complementos:",
+                "Túlio Zanella - Estudante do Técnico em IoT"
+            ]
+
+            y_offset = 175
+            for linha in linhas:
+                if "Concepção" in linha or "Edições" in linha:
+                    cor = AMARELO
+                    txt_surf = FONTE_SUBTITULO.render(linha, True, cor)
+                else:
+                    cor = BRANCO
+                    txt_surf = FONTE_TEXTO.render(linha, True, cor)
+                superficie.blit(txt_surf, (330, y_offset))
+                y_offset += 25
+
+            pygame.draw.rect(superficie, VERDE_MATRIX, self.btn_voltar, 2)
+            lbl_voltar = FONTE_SUBTITULO.render("VOLTAR", True, VERDE_MATRIX)
+            superficie.blit(lbl_voltar, (self.btn_voltar.x + (self.btn_voltar.width - lbl_voltar.get_width()) // 2, self.btn_voltar.y + (self.btn_voltar.height - lbl_voltar.get_height()) // 2))
 
         # 2. TELA QUIZ
         elif self.estado == "QUIZ":
@@ -539,12 +642,15 @@ class JogoHardware:
             painel.fill(CINZA_TRANSPARENTE)
             pygame.draw.rect(painel, VERMELHO, painel.get_rect(), 2)
             superficie.blit(painel, (55, 50))
-            final_img = self.mii_normal if self.pontos >= 1000 else self.mii_triste
-            superficie.blit(final_img, (760, 70))
+            final_m = self.mii_marcelo_normal_end if self.pontos >= 1000 else self.mii_marcelo_triste_end
+            final_b = self.mii_bruno_normal_end if self.pontos >= 1000 else self.mii_bruno_triste_end
+            superficie.blit(final_m, (710, 70))
+            superficie.blit(final_b, (710, 240))
 
-            tit = FONTE_TITULO.render("💥 O COMPUTADOR NÃO LIGOU!", True, VERMELHO)
+            tit = FONTE_TITULO.render("O COMPUTADOR NÃO LIGOU!", True, VERMELHO)
             sub = FONTE_SUBTITULO.render("Falha crítica de montagem/conhecimento:", True, BRANCO)
-            superficie.blit(tit, (75, 70))
+            desenhar_alerta(superficie, 75, 70, 28)
+            superficie.blit(tit, (115, 70))
             superficie.blit(sub, (75, 105))
 
             y_err = 140
@@ -561,7 +667,7 @@ class JogoHardware:
 
         # 6. TELA DE VITÓRIA COM PLACAR GLOBAL DESTACADO
         elif self.estado == "VITORIA":
-            painel_txt = FONTE_TITULO.render("🎉 PARABÉNS! MONTAGEM E BOOT CONCLUÍDOS!", True, VERDE_MATRIX)
+            painel_txt = FONTE_TITULO.render("PARABÉNS! MONTAGEM E BOOT CONCLUÍDOS!", True, VERDE_MATRIX)
             pts_txt = FONTE_SUBTITULO.render(f"Jogador: {self.nome_jogador} | Pontuação Final: {self.pontos} Pts", True, AMARELO)
             
             superficie.blit(painel_txt, ((LARGURA - painel_txt.get_width()) // 2, 40))
@@ -569,8 +675,10 @@ class JogoHardware:
 
             # Placar Global Centralizado na Tela de Vitória
             self.placar.desenhar(superficie, x=225, y=120, largura=500, altura=420)
-            final_img = self.mii_normal if self.pontos >= 1000 else self.mii_triste
-            superficie.blit(final_img, (790, 280))
+            final_m = self.mii_marcelo_normal_end if self.pontos >= 1000 else self.mii_marcelo_triste_end
+            final_b = self.mii_bruno_normal_end if self.pontos >= 1000 else self.mii_bruno_triste_end
+            superficie.blit(final_m, (45, 250))
+            superficie.blit(final_b, (780, 250))
 
             rst_txt = FONTE_SUBTITULO.render("Pressione [ENTER] para jogar novamente", True, BRANCO)
             superficie.blit(rst_txt, ((LARGURA - rst_txt.get_width()) // 2, 580))

@@ -50,11 +50,11 @@ linux-arm:
 	echo 'Icon=$(APP_ID)' >> dist/AppDir-arm/$(APP_ID).desktop
 	echo 'Categories=Game;' >> dist/AppDir-arm/$(APP_ID).desktop
 	cp assets/img/logo_iot.png dist/AppDir-arm/$(APP_ID).png
-	test -f appimagetool-aarch64 || (curl -Lo appimagetool-aarch64 https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-aarch64.AppImage && chmod +x appimagetool-aarch64)
-	rm -rf squashfs-root-arm
-	./appimagetool-aarch64 --appimage-extract
-	mv squashfs-root squashfs-root-arm
-	ARCH=aarch64 ./squashfs-root-arm/AppRun dist/AppDir-arm dist/$(APP_NAME)-aarch64.AppImage
+	test -f appimagetool-x86_64 || (curl -Lo appimagetool-x86_64 https://github.com/AppImage/AppImageKit/releases/download/continuous/appimagetool-x86_64.AppImage && chmod +x appimagetool-x86_64)
+	rm -rf squashfs-root-x64
+	./appimagetool-x86_64 --appimage-extract
+	mv squashfs-root squashfs-root-x64
+	ARCH=aarch64 ./squashfs-root-x64/AppRun dist/AppDir-arm dist/$(APP_NAME)-aarch64.AppImage
 
 clean:
-	rm -rf build dist *.spec appimagetool-x86_64 appimagetool-aarch64 squashfs-root-x64 squashfs-root-arm
+	rm -rf build dist *.spec appimagetool-x86_64 squashfs-root-x64
