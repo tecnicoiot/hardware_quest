@@ -1,0 +1,5 @@
+placar_global.json
+__pycache__
+dist
+build
+HardwareQuest-linux-x64.spec
